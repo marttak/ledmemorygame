@@ -1,4 +1,4 @@
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include <avr/wdt.h>
 
 //define game over notes
@@ -95,8 +95,8 @@
 //buttons
 const int buttonPin1 = 18;
 const int buttonPin2 = 19;
-const int buttonPin3 = 20;
-const int buttonPin4 = 21;
+const int buttonPin3 = 16;
+const int buttonPin4 = 17;
 const int startButton = 12;
 
 //leds
@@ -105,6 +105,7 @@ const int ledPin2 = 41;
 const int ledPin3 = 42;
 const int ledPin4 = 43;
 
+/*
 //lcd display pins
 const int rs = 24;
 const int en = 22;
@@ -112,11 +113,12 @@ const int d4 = 37;
 const int d5 = 35;
 const int d6 = 33;
 const int d7 = 31;
+*/
 
 //piezo
 const int buzzer = 53;
 
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 volatile bool mistake = false;
 int run;
@@ -175,7 +177,6 @@ int underworld_melody[] = {
 };
 
 void setup() {
-  noInterrupts();
   //initialize LED pins as outputs:
   pinMode(ledPin1, OUTPUT);
   pinMode(ledPin2, OUTPUT);
@@ -188,14 +189,14 @@ void setup() {
   pinMode(buttonPin3, INPUT_PULLUP);
   pinMode(buttonPin4, INPUT_PULLUP);
   pinMode(startButton, INPUT_PULLUP);
-  
+
+  lcd.init();
   lcd.begin(16,2);
   Serial.begin(9600);
   run = 0;
 
   wdt_enable(WDTO_8S);
 
-  interrupts();
 }
 
 void loop() {
@@ -268,7 +269,7 @@ void game(){
 
 //function to get user input and check the input
 int input(int level){
-  int button_Pins[4]={18,19,20,21}; //array to store button pins
+  int button_Pins[4]={18,19,16,17}; //array to store button pins
 
   //statement controlled by level count
   for(int x = 0; x <= level;){
@@ -319,7 +320,7 @@ int input(int level){
         x++;
       }
       
-      if(buttonState == LOW && button_Pins[y] == 20){
+      if(buttonState == LOW && button_Pins[y] == 16){
         wdt_reset();
         digitalWrite(ledPin3, HIGH);
         tone(buzzer, 1200, 500);
@@ -338,7 +339,7 @@ int input(int level){
         x++;
       }
       
-      if(buttonState == LOW && button_Pins[y] == 21){
+      if(buttonState == LOW && button_Pins[y] == 17){
         wdt_reset();
         digitalWrite(ledPin4, HIGH);
         tone(buzzer, 1400, 500);
