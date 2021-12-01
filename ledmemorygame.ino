@@ -21,6 +21,9 @@ const int d5 = 35;
 const int d6 = 33;
 const int d7 = 31;
 
+//piezo
+const int buzzer = 53;
+
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
@@ -75,8 +78,8 @@ void loop() {
     }
     
   if(run > 0){
-    game();
     delay(1000);
+    game();
   }
 }
 
@@ -85,6 +88,7 @@ void game(){
   lcd.clear();
   score = 0;
   int led_Pins[4]={40, 41, 42, 43}; //array to store the led pins
+  int buzzer_Array[4]={800, 1000, 1200, 1400};
   int level = -1; // -1 because we want to start the level from 0
 
      do{
@@ -99,9 +103,10 @@ void game(){
       //shows the users what leds to remember
       for (int i = 0; i <= level; i++){
         digitalWrite(led_Pins[rand_Array[i]], HIGH);
-        delay(1000);
+        tone(buzzer, buzzer_Array[rand_Array[i]], 500);
+        delay(500);
         digitalWrite(led_Pins[rand_Array[i]], LOW);
-        delay(1000);
+        delay(500);
        }
        
       //checks the user input
@@ -131,7 +136,8 @@ int input(int level){
       //checking for button push
       if(buttonState == LOW && button_Pins[y] == 18){
         digitalWrite(ledPin1, HIGH);
-        delay(1000);
+        tone(buzzer, 800, 500);
+        delay(500);
         digitalWrite(ledPin1, LOW);
         user_input[x] = 0;
         //check the user_input against the rand_Array
@@ -148,7 +154,8 @@ int input(int level){
       
       if(buttonState == LOW && button_Pins[y] == 19){
         digitalWrite(ledPin2, HIGH);
-        delay(1000);
+        tone(buzzer, 1000, 500);
+        delay(500);
         digitalWrite(ledPin2, LOW);
         user_input[x] = 1;
         if (user_input[x] != rand_Array[x]){
@@ -162,7 +169,8 @@ int input(int level){
       
       if(buttonState == LOW && button_Pins[y] == 20){
         digitalWrite(ledPin3, HIGH);
-        delay(1000);
+        tone(buzzer, 1200, 500);
+        delay(500);
         digitalWrite(ledPin3, LOW);
         user_input[x] = 2;
         if (user_input[x] != rand_Array[x]){
@@ -176,7 +184,8 @@ int input(int level){
       
       if(buttonState == LOW && button_Pins[y] == 21){
         digitalWrite(ledPin4, HIGH);
-        delay(1000);
+        tone(buzzer, 1400, 500);
+        delay(500);
         digitalWrite(ledPin4, LOW);
         user_input[x] = 3;
         if (user_input[x] != rand_Array[x]){
