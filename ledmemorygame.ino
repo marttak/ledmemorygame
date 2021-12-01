@@ -1,3 +1,5 @@
+#include <LiquidCrystal.h>
+
 //buttons
 const int buttonPin1 = 18;
 const int buttonPin2 = 19;
@@ -11,13 +13,26 @@ const int ledPin2 = 41;
 const int ledPin3 = 42;
 const int ledPin4 = 43;
 
+//lcd display pins
+const int rs = 24;
+const int en = 22;
+const int d4 = 37;
+const int d5 = 35;
+const int d6 = 33;
+const int d7 = 31;
+
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+
 volatile bool mistake = false;
 int run;
+volatile int score = 0; //user score
 
-volatile int ROUNDS_TO_WIN = 5; //how many rounds it takes for the game to reach the end
+volatile int ROUNDS_TO_WIN = 250; //how many rounds it takes for the game to reach the end
+                                 //first level is 0
 
-int rand_Array[5]; //array to store the sequence to remember
-int user_input[5]; //array to store the sequence user guesses
+int rand_Array[249]; //array to store the sequence to remember
+int user_input[249]; //array to store the sequence user guesses
 
 void setup() {
   noInterrupts();
@@ -33,7 +48,8 @@ void setup() {
   pinMode(buttonPin3, INPUT_PULLUP);
   pinMode(buttonPin4, INPUT_PULLUP);
   pinMode(startButton, INPUT_PULLUP);
-
+  
+  lcd.begin(16,2);
   Serial.begin(9600);
   run = 0;
 
@@ -43,7 +59,11 @@ void setup() {
 void loop() {
 
   //prompt the user to press startbutton
-  Serial.println("Press white button to start");
+  lcd.setCursor(0,0);
+  lcd.print("Press White Button");
+  lcd.setCursor(0,1);
+  lcd.print("to Start");
+  Serial.println("Press White Button to Start");
 
   //if the game is not already on, start the game when startbutton is pressed
   if (digitalRead(startButton) == LOW){
@@ -62,6 +82,8 @@ void loop() {
 
 //function for the game loop
 void game(){
+  lcd.clear();
+  score = 0;
   int led_Pins[4]={40, 41, 42, 43}; //array to store the led pins
   int level = -1; // -1 because we want to start the level from 0
 
@@ -69,7 +91,10 @@ void game(){
       level++; //next level
       int next_led = rand() % 4; //draws the next led for the sequence randomly
       rand_Array[level] = next_led; //input the randomized next_led to rand_Array in the place of current level
-
+      lcd.setCursor(0,0);
+      lcd.print("Current Level: ");
+      lcd.print(level + 1);
+ 
       //iterate over the sequence
       //shows the users what leds to remember
       for (int i = 0; i <= level; i++){
@@ -83,6 +108,10 @@ void game(){
       mistake = input(level);
         
      } while(!mistake && level < ROUNDS_TO_WIN); //do while the user doesn't make a mistake and the max number of rounds is not passed
+
+  Serial.println("Your score: ");
+  Serial.print(score);
+  delay(1000);
   
   //after the game is finished (user makes a mistake or max numbers of rounds is passed) return to main loop
   run = 0;
@@ -105,11 +134,13 @@ int input(int level){
         delay(1000);
         digitalWrite(ledPin1, LOW);
         user_input[x] = 0;
-        Serial.println(user_input[x]);
         //check the user_input against the rand_Array
         //if they don't match, returns true to game function
         //mistake becomes true -> game over
         if (user_input[x] != rand_Array[x]){
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Game Over");
           return true;
         }
         x++;
@@ -120,9 +151,11 @@ int input(int level){
         delay(1000);
         digitalWrite(ledPin2, LOW);
         user_input[x] = 1;
-        Serial.println(user_input[x]);
         if (user_input[x] != rand_Array[x]){
           return true;
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Game Over");
         }
         x++;
       }
@@ -132,8 +165,10 @@ int input(int level){
         delay(1000);
         digitalWrite(ledPin3, LOW);
         user_input[x] = 2;
-        Serial.println(user_input[x]);
         if (user_input[x] != rand_Array[x]){
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Game Over");
           return true;
         }
         x++;
@@ -144,8 +179,10 @@ int input(int level){
         delay(1000);
         digitalWrite(ledPin4, LOW);
         user_input[x] = 3;
-        Serial.println(user_input[x]);
         if (user_input[x] != rand_Array[x]){
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Game Over");
           return true;
         }
         x++;
@@ -153,7 +190,8 @@ int input(int level){
       
     }
   }
-  
+
+  score++;
   delay(500);
   return false; //return false when the user passes the level without mistake
   
