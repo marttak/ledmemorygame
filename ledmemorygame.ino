@@ -1,5 +1,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <avr/wdt.h>
+#include <EEPROM.h>
 
 //define game over notes
 #define NOTE_B0  31
@@ -105,16 +106,6 @@ const int ledPin2 = 41;
 const int ledPin3 = 42;
 const int ledPin4 = 43;
 
-/*
-//lcd display pins
-const int rs = 24;
-const int en = 22;
-const int d4 = 37;
-const int d5 = 35;
-const int d6 = 33;
-const int d7 = 31;
-*/
-
 //piezo
 const int buzzer = 53;
 
@@ -123,6 +114,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 volatile bool mistake = false;
 int run;
 volatile int score = 0; //user score
+int savedHighScore = 0; //highscore to store in eeprom
 
 volatile int ROUNDS_TO_WIN = 250; //how many rounds it takes for the game to reach the end
                                  //first level is 0
@@ -191,7 +183,7 @@ void setup() {
   pinMode(startButton, INPUT_PULLUP);
 
   lcd.init();
-  lcd.begin(16,2);
+  lcd.begin(16,4);
   Serial.begin(9600);
   run = 0;
 
@@ -201,11 +193,17 @@ void setup() {
 
 void loop() {
 
+  //EEPROM.put(0, savedHighScore); //uncomment to store the default in EEPROM
+  EEPROM.get(0, savedHighScore);
+
   //prompt the user to press startbutton
   lcd.setCursor(0,0);
   lcd.print("Press White Button");
   lcd.setCursor(0,1);
   lcd.print("to Start");
+  lcd.setCursor(0,2);
+  lcd.print("HighScore: ");
+  lcd.print(savedHighScore);
   Serial.println("Press White Button to Start");
 
   //if the game is not already on, start the game when startbutton is pressed
@@ -257,6 +255,21 @@ void game(){
       mistake = input(level);
         
      } while(!mistake && level < ROUNDS_TO_WIN); //do while the user doesn't make a mistake and the max number of rounds is not passed
+     
+  score = level;
+      if(score > savedHighScore){
+        EEPROM.put(0, score);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("HighScore!");
+        delay(500);
+      }else{
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Your Score: ");
+        lcd.print(score);
+        delay(500);
+      }   
 
   wdt_reset();
   Serial.println("Your score: ");
@@ -295,8 +308,9 @@ int input(int level){
           lcd.clear();
           lcd.setCursor(0,0);
           lcd.print("Game Over");
-          return true;
+          delay(1000);
           wdt_reset();
+          return true;
         }
         x++;
       }
@@ -311,11 +325,12 @@ int input(int level){
         wdt_reset();
         if (user_input[x] != rand_Array[x]){
           wdt_reset();
-          return true;
           lcd.clear();
           lcd.setCursor(0,0);
           lcd.print("Game Over");
+          delay(1000);
           wdt_reset();
+          return true;
         }
         x++;
       }
@@ -333,8 +348,9 @@ int input(int level){
           lcd.clear();
           lcd.setCursor(0,0);
           lcd.print("Game Over");
-          return true;
+          delay(1000);
           wdt_reset();
+          return true;
         }
         x++;
       }
@@ -352,8 +368,9 @@ int input(int level){
           lcd.clear();
           lcd.setCursor(0,0);
           lcd.print("Game Over");
-          return true;
+          delay(1000);
           wdt_reset();
+          return true;
         }
         x++;
       }
